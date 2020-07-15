@@ -1,0 +1,125 @@
+package com.tts.h2Explore.domain;
+​
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+​
+@Entity
+public class Customer {
+​
+//	Field Attributes
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+​
+	private String firstName;
+	private String lastName;
+​
+	// Default Constructor
+	public Customer() {
+	}
+​
+	// Constructor with our fields
+	public Customer(String firstName, String lastName) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+	}
+​
+	// Getters and Setters
+	public String getFirstName() {
+		return firstName;
+	}
+​
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+​
+	public String getLastName() {
+		return lastName;
+	}
+​
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+​
+	public Long getId() {
+		return id;
+	}
+​
+	// Override toString Method
+	@Override
+	public String toString() {
+		return "Customer [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+	}
+​
+package com.tts.h2Explore;
+​
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+​
+import com.tts.h2Explore.domain.Customer;
+import com.tts.h2Explore.repository.CustomerRepository;
+​
+@SpringBootApplication
+public class H2ExploreApplication {
+	private static final Logger log = LoggerFactory.getLogger(H2ExploreApplication.class);
+​
+	public static void main(String[] args) {
+		SpringApplication.run(H2ExploreApplication.class, args);
+	}
+	@Bean
+	public CommandLineRunner demo(CustomerRepository repository) {
+		return (args) -> {
+			// save a couple of customers
+			repository.save(new Customer("Michael", "Smith"));
+			repository.save(new Customer("Aaron", "Moon"));
+			repository.save(new Customer("Kim", "Lassiter"));
+			repository.save(new Customer("Joan", "Daniels"));
+			repository.save(new Customer("Eric", "Patterson"));
+​
+			// read all customers
+			log.info("Customers found with findAll():");
+			log.info("-------------------------------");
+			for (Customer customer : repository.findAll()) {
+				log.info(customer.toString());
+			}
+			log.info("");
+​
+			// read an individual customer by ID
+			repository.findById(1L)
+				.ifPresent(customer -> {
+					log.info("Customer found with findById(1L):");
+					log.info("--------------------------------");
+					log.info(customer.toString());
+					log.info("");
+				});
+​
+			// read customers by last name
+			log.info("Customer found with findByLastName('Patterson'):");
+			log.info("--------------------------------------------");
+			repository.findByLastName("Patterson").forEach(bauer -> {
+				log.info(bauer.toString());
+			});
+			
+			log.info("");
+		};
+	}
+}
+package com.tts.h2Explore.repository;
+​
+import java.util.List;
+​
+import org.springframework.data.repository.CrudRepository;
+​
+import com.tts.h2Explore.domain.Customer;
+​
+public interface CustomerRepository extends CrudRepository<Customer, Long>	{
+	
+	List<Customer> findByLastName(String lastName);
+​
+}
